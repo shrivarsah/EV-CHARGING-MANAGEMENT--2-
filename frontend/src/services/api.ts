@@ -15,7 +15,12 @@ export async function request<T>(
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const baseUrl = new URL(API_BASE_URL);
+  const url = new URL(endpoint, baseUrl);
+
+  if (url.origin !== baseUrl.origin) {
+  throw new Error('Invalid API endpoint');
+  }
 
   const response = await fetch(url, {
     ...options,
