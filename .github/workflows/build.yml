@@ -1,3 +1,4 @@
+
 name: SonarQube Analysis
 
 on:
@@ -32,7 +33,18 @@ jobs:
         working-directory: frontend
         run: npm test -- --coverage
 
+      - name: Verify coverage report
+        run: |
+          test -f frontend/coverage/lcov.info || (echo "Coverage report not found: frontend/coverage/lcov.info" && exit 1)
+
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
-         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.sources=frontend/src,backend/app
+            -Dsonar.tests=backend
+            -Dsonar.test.inclusions=backend/**/*.py,frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx
+            -Dsonar.exclusions=frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx,frontend/src/test/**,frontend/src/main.tsx,frontend/src/vite-env.d.ts,backend/.venv/**
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
