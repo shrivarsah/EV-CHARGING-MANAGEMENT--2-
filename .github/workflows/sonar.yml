@@ -40,10 +40,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'frontend/package-lock.json'
 
-      - name: Install Frontend Dependencies & Build Bundle
+      - name: Install Frontend Dependencies, Test & Build
+        working-directory: frontend
         run: |
-          cd frontend
-          npm ci || npm install
+          npm ci
+          npm test -- --coverage
           npm run build
 
       - name: SonarQube Cloud Scan
@@ -51,3 +52,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.sources=frontend/src,backend/app
+            -Dsonar.exclusions=frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx,frontend/src/test/**,frontend/src/main.tsx,frontend/src/vite-env.d.ts,backend/.venv/**
+            -Dsonar.coverage.exclusions=frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx,frontend/src/test/**,backend/tests/**
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+            -Dsonar.python.coverage.reportPaths=backend/coverage.xml
