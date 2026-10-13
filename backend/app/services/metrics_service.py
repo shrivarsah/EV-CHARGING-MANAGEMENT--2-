@@ -67,7 +67,7 @@ class MetricsService:
         if save_snapshot and configured_count > 0:
             try:
                 snapshot = MetricSnapshot(
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=datetime.datetime.now(datetime.timezone.utc),
                     overall_score=overall_score,
                     loc=sonar_metrics.get("ncloc"),
                     code_complexity=sonar_metrics.get("cognitive_complexity"),
@@ -103,7 +103,7 @@ class MetricsService:
             configured_metrics=configured_count,
             sonarqube_status=sonar_result.get("status", "NOT_CONFIGURED"),
             jira_status=jira_result.get("status", "NOT_CONFIGURED"),
-            last_updated=datetime.datetime.utcnow(),
+            last_updated=datetime.datetime.now(datetime.timezone.utc),
             metrics=items,
             project_health_summary=summary
         )

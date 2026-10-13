@@ -149,7 +149,7 @@ def seed_database(db: Session):
 
     # 3. Create Sample Historical Sessions & Payments for the Customer
     target_charger = all_chargers[0]
-    past_time_1 = datetime.datetime.utcnow() - datetime.timedelta(days=2, hours=4)
+    past_time_1 = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2, hours=4)
     session_1 = ChargingSession(
         user_id=customer_user.id,
         charger_id=target_charger.id,

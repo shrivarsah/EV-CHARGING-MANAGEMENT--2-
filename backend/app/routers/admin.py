@@ -68,7 +68,7 @@ def admin_emergency_stop_session(
     if sess.status != SessionStatus.ACTIVE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Session is not currently active")
 
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
     sess.end_time = now
     sess.status = SessionStatus.COMPLETED
     rate = sess.charger.price_per_kwh if sess.charger else 18.50

@@ -56,7 +56,7 @@ def start_session(
         user_id=current_user.id,
         charger_id=charger.id,
         reservation_id=sess_in.reservation_id,
-        start_time=datetime.datetime.utcnow(),
+        start_time=datetime.datetime.now(datetime.timezone.utc),
         status=SessionStatus.ACTIVE,
         initial_soc=sess_in.initial_soc,
         current_soc=sess_in.initial_soc,
@@ -165,7 +165,7 @@ def complete_session(
 
     rate = sess.charger.price_per_kwh if sess.charger else 18.50
     final_amount = round(comp_in.energy_consumed_kwh * rate, 2)
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     sess.end_time = now
     sess.status = SessionStatus.COMPLETED

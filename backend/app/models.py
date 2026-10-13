@@ -43,7 +43,7 @@ class User(Base):
     phone = Column(String(50), nullable=True)
     role = Column(String(20), default=UserRole.CUSTOMER, nullable=False)  # ADMIN or CUSTOMER
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
     # Relationships
     reservations = relationship("Reservation", back_populates="user", cascade="all, delete-orphan")
@@ -66,9 +66,15 @@ class Station(Base):
     total_chargers = Column(Integer, default=1)
     status = Column(String(30), default="ACTIVE")  # ACTIVE, MAINTENANCE, INACTIVE
     amenities = Column(String(500), default="Restrooms, Cafe, Wi-Fi")
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
+    updated_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    onupdate=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
     # Relationships
     chargers = relationship("Charger", back_populates="station", cascade="all, delete-orphan")
 
@@ -84,8 +90,15 @@ class Charger(Base):
     current_type = Column(String(20), default="DC")  # AC, DC
     price_per_kwh = Column(Float, nullable=False, default=18.50)  # Price in currency
     status = Column(String(30), default=ChargerStatus.AVAILABLE)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(
+        DateTime,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc)
+    )
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc), 
+        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc)
+    )
 
     # Relationships
     station = relationship("Station", back_populates="chargers")
@@ -103,7 +116,10 @@ class Reservation(Base):
     end_time = Column(DateTime, nullable=False)
     status = Column(String(30), default=ReservationStatus.CONFIRMED)
     notes = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
 
     # Relationships
     user = relationship("User", back_populates="reservations")
@@ -118,7 +134,11 @@ class ChargingSession(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     charger_id = Column(Integer, ForeignKey("chargers.id", ondelete="CASCADE"), nullable=False)
     reservation_id = Column(Integer, ForeignKey("reservations.id", ondelete="SET NULL"), nullable=True)
-    start_time = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    start_time = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    nullable=False
+)
     end_time = Column(DateTime, nullable=True)
     status = Column(String(30), default=SessionStatus.ACTIVE)
     initial_soc = Column(Float, default=20.0)  # Battery State of Charge %
@@ -127,8 +147,16 @@ class ChargingSession(Base):
     energy_consumed_kwh = Column(Float, default=0.0)
     duration_seconds = Column(Integer, default=0)
     total_amount = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
+    updated_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    onupdate=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
 
     # Relationships
     user = relationship("User", back_populates="sessions")
@@ -147,7 +175,10 @@ class Payment(Base):
     amount = Column(Float, nullable=False)
     payment_method = Column(String(50), default="UPI / Card")
     status = Column(String(30), default="SUCCESS")  # SUCCESS, PENDING, FAILED
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
 
     # Relationships
     session = relationship("ChargingSession", back_populates="payment")
@@ -163,7 +194,10 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     type = Column(String(30), default="INFO")  # INFO, SUCCESS, WARNING, ALERT
     is_read = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
 
     # Relationships
     user = relationship("User", back_populates="notifications")
@@ -173,7 +207,10 @@ class MetricSnapshot(Base):
     __tablename__ = "metric_snapshots"
 
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc)
+)
     overall_score = Column(Float, nullable=False)  # 0 to 100 quality score
     
     # 8 SonarQube Metrics
@@ -208,4 +245,8 @@ class ApiConfiguration(Base):
     organization = Column(String(100), nullable=True)
     custom_fields_json = Column(Text, nullable=True)  # JSON mapping for custom fields
     is_active = Column(Boolean, default=True)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    updated_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    onupdate=lambda: datetime.datetime.now(datetime.timezone.utc)
+)

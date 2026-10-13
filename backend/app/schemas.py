@@ -1,6 +1,6 @@
 import datetime
 from typing import Optional, List, Any, Dict
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # ==================== User & Auth Schemas ====================
@@ -25,8 +25,7 @@ class UserOut(UserBase):
     is_active: bool
     created_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Token(BaseModel):
@@ -249,8 +248,7 @@ class MetricSnapshotOut(BaseModel):
     station_availability_response_index: Optional[float] = None
     status: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ApiConfigBase(BaseModel):
