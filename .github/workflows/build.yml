@@ -49,3 +49,4 @@ jobs:
             -Dsonar.exclusions=frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx,frontend/src/test/**,frontend/src/main.tsx,frontend/src/vite-env.d.ts,backend/.venv/**
             -Dsonar.coverage.exclusions=frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx,frontend/src/test/**,backend/tests/**
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+            -Dsonar.coverage.exclusions=frontend/src/**/*.test.ts,frontend/src/**/*.test.tsx,frontend/src/**/*.spec.ts,frontend/src/**/*.spec.tsx,frontend/src/test/**
