@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EV Charging Station Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>EV Charging Station Management System</h1>
+    <p>Smart monitoring, station availability and slot booking</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Available Charging Stations</h2>
+      <div id="stations">Loading...</div>
+    </section>
+
+    <section class="card">
+      <h2>Reserve Charging Slot</h2>
+      <form id="bookingForm">
+       <label for="user">User Name</label>
+<input id="user" placeholder="User name" required>
+       <label for="stationId">Charging Station</label>
+<select id="stationId" required></select>
+        <label for="slot">Charging Slot</label>
+<input id="slot" type="datetime-local" required>
+        <button type="submit">Book Slot</button>
+      </form>
+      <p id="message"></p>
+    </section>
+
+    <section class="card">
+      <h2>Booking History</h2>
+      <div id="bookings">No bookings yet.</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

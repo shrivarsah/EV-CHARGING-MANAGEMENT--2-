@@ -1,0 +1,154 @@
+# EV Charging Station Management & Software Metrics System
+## Architecture & Implementation Roadmap
+
+### 1. Executive Overview
+This document specifies the complete system design and implementation plan for the **EV Charging Station Management & Software Metrics Dashboard**. The system unites an end-to-end operational EV charging network platform with an enterprise Software Quality & Operational Performance Dashboard powered by real data from **SonarQube Cloud** and **Jira Cloud**.
+
+---
+
+### 2. Tech Stack Architecture
+
+| Layer | Technologies | Key Responsibilities |
+|---|---|---|
+| **Frontend** | React 18, Vite, TypeScript, Recharts, Lucide Icons, Vanilla CSS Design System | Responsive dual-role UI (Customer & Admin), EV Booking & Session Management, 10-Metric Quality Dashboard, Trends, Dark/Light Mode |
+| **Backend** | Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0, Uvicorn | High-performance async REST API, JWT OAuth2 authentication, EV business logic, Real SonarQube & Jira REST clients |
+| **Database** | PostgreSQL 15+ (with SQLite dynamic auto-fallback for isolated testing/local execution) | Relational schema for EV operations, historical metric snapshots, encrypted/persisted API credentials |
+| **Integrations** | SonarQube Cloud REST API v2, Atlassian Jira Cloud REST API v3 | Live retrieval of 8 code quality metrics and 2 custom operational metrics; zero synthetic/fake figures |
+| **Deployment** | Docker, Docker Compose, Nginx | Multi-container composition (db, backend, frontend) with unified network and environment injection |
+| **CI / Quality** | GitHub Actions, SonarCloud Scanner, Pytest, Vitest | Continuous code inspection, automated unit & integration testing, LCOV test coverage generation |
+
+---
+
+### 3. Module Breakdown & Roadmap
+
+```mermaid
+flowchart TD
+    subgraph Client [Frontend - React + Vite + TypeScript]
+        EV_UI["EV Charging Portal"]
+        Admin_UI["Admin Operations Center"]
+        Metrics_UI["Software Quality & Jira Dashboard"]
+    end
+
+    subgraph API [FastAPI Backend]
+        AuthRouter["JWT Auth & RBAC"]
+        EVRouter["Station, Charger & Session Routers"]
+        MetricsRouter["Metrics & Snapshot Engine"]
+        SonarClient["SonarQube Cloud Client"]
+        JiraClient["Jira REST Client"]
+    end
+
+    subgraph External [External Cloud Services]
+        SonarCloud["SonarQube Cloud API"]
+        JiraCloud["Atlassian Jira API"]
+    end
+
+    subgraph Storage [PostgreSQL Database]
+        EV_Tables[("Users, Stations, Chargers, Sessions, Payments")]
+        Snapshots[("Metric Snapshots Table")]
+        Configs[("API Configurations Table")]
+    end
+
+    EV_UI --> EVRouter
+    Admin_UI --> EVRouter
+    Metrics_UI --> MetricsRouter
+    AuthRouter --> Storage
+    EVRouter --> EV_Tables
+    MetricsRouter --> Snapshots
+    MetricsRouter --> Configs
+    MetricsRouter --> SonarClient
+    MetricsRouter --> JiraClient
+    SonarClient --> SonarCloud
+    JiraClient --> JiraCloud
+```
+
+#### Module 1 — EV Charging Application
+- **User Authentication**: JWT token exchange, secure password hashing (PBKDF2/Bcrypt), role separation (`CUSTOMER`, `ADMIN`).
+- **Station Management**: Detailed stations with location coordinates, power capacities, pricing rates, operating hours, amenities.
+- **Charger & Connector Management**: Multi-charger support per station (CCS2, Type 2, CHAdeMO, GB/T; 22kW to 350kW). Real-time states: `AVAILABLE`, `RESERVED`, `CHARGING`, `MAINTENANCE`, `OFFLINE`.
+- **Search & Filtering**: Search by city, address, connector type, minimum power (kW), and live availability.
+- **Slot Reservation**: Slot booking with expiration timestamps and status transitions.
+- **Charging Session Management**: Start session, live telemetry simulation (kWh, battery SoC %, charging duration, power rate), session completion with automatic billing.
+- **Payment & Invoicing**: Automated receipt generation, transaction IDs, payment method simulation, status tracking.
+- **Charging History & Notifications**: Historical log for customer, admin-wide operational audit log, notification drawer for alerts and receipts.
+- **Admin Monitoring Dashboard**: Real-time KPI cards (Active Sessions, Total Energy, Revenue, Utilization), station status grid, session termination controls.
+
+#### Module 2 — Software Metrics (Exactly 10 Metrics)
+- **SonarQube Metrics (8)**:
+  1. Lines of Code (`ncloc`)
+  2. Code Complexity (`cognitive_complexity`)
+  3. Cyclomatic Complexity (`complexity`)
+  4. Code Coverage (`coverage`)
+  5. Code Duplication (`duplicated_lines_density`)
+  6. Bugs (`bugs`)
+  7. Technical Debt (`sqale_index` / `sqale_debt_ratio`)
+  8. Security Vulnerabilities (`vulnerabilities`)
+- **Jira Custom Metrics (2)**:
+  9. **Charging Workflow Efficiency**: `(Expected Workflow Time / Actual Workflow Time) * 100`
+  10. **Station Availability Response Index**: `(Expected Response Time / Actual Response Time) * 100`
+
+#### Module 3 — Metrics Dashboard UI
+- **Overall Software Quality Score**: Deterministic composite formula combining SonarQube reliability/debt/coverage rating with Jira workflow performance index.
+- **10 Dedicated Metric Cards**: Value, unit, benchmark badge (Good / Warning / Danger / Unconfigured), description, source badge (`SonarQube Cloud` vs `Jira Cloud`).
+- **Pages**:
+  1. Overview
+  2. Code Quality
+  3. Testing & Security
+  4. EV Charging Metrics
+  5. Trends (Recharts line/area plots from snapshot table)
+  6. Settings / API Configuration (Connection testing, token/key saving, manual trigger)
+- Clean, enterprise design system. Absolutely NO emojis. Dark and light mode toggle.
+
+#### Module 4 — SonarQube Integration
+- FastAPI service interacting with SonarQube Cloud API (`/api/measures/component`).
+- Handles authentications via User Tokens, Project Key, and Organization.
+- Error handling with explicit network/credential diagnostics. Zero fake numbers.
+
+#### Module 5 — Jira Integration
+- FastAPI service querying Jira REST API v3/v2.
+- Supports Atlassian API tokens + email authentication.
+- Retrieves Jira custom fields or calculates from issue time estimates/worklogs for metrics 9 & 10.
+- Field mapping configuration in database. Zero synthetic numbers.
+
+#### Module 6 — Database Schema
+- Relational tables:
+  - `users`
+  - `stations`
+  - `chargers`
+  - `reservations`
+  - `charging_sessions`
+  - `payments`
+  - `notifications`
+  - `metric_snapshots`
+  - `api_configurations`
+- Automated seed data for EV application entities only (never for Jira/SonarQube metrics).
+
+#### Module 7 — Testing Suite
+- Backend: `pytest`, `pytest-cov`, `httpx` (unit and integration tests for auth, EV models, API endpoints, Jira & SonarQube calculators).
+- Frontend: `vitest` unit tests for metric rendering and formatting.
+
+#### Module 8 — SonarQube Project Configuration
+- `sonar-project.properties` configured for backend and frontend source scanning.
+- GitHub Actions CI workflow for automatic SonarCloud scanning on push.
+
+#### Module 9 — Docker & Deployment
+- `docker-compose.yml` with:
+  - `db`: PostgreSQL 15 Alpine with persistent volume.
+  - `backend`: FastAPI with Uvicorn.
+  - `frontend`: Multi-stage Vite build served with Nginx.
+- `.env.example` defining database URLs and API keys without leaking secrets.
+
+#### Module 10 — Comprehensive Documentation
+- Production README with architecture diagrams, API specs, setup scripts, Docker instructions, SonarQube Cloud linking guide, and Jira configuration steps.
+
+---
+
+### 4. Implementation Step-by-Step Sequence
+1. **Backend Database & Schemas**: SQLAlchemy models, Pydantic schemas, database connection manager, seed data script.
+2. **Backend Authentication & Routers**: JWT auth, Station/Charger/Reservation/Session/Payment/Notification APIs.
+3. **Backend Integrations (SonarQube & Jira)**: Services, router, snapshot recorder, and connection tester.
+4. **Backend Automated Tests**: Pytest test suite covering all modules and integrations.
+5. **Frontend Application**: Vite React TypeScript setup, Enterprise Design System (CSS), Auth Context, Navigation, EV Application screens, and 6-page Software Metrics Dashboard.
+6. **Docker Configuration**: Backend Dockerfile, Frontend Dockerfile, Nginx config, `docker-compose.yml`.
+7. **SonarQube & CI Configuration**: `sonar-project.properties`, GitHub Actions workflow, coverage mapping.
+8. **Verification & Testing**: Run test suites, verify API endpoints, verify build, verify Docker readiness.
+9. **Documentation**: Finalize README.md with comprehensive guides.
